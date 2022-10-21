@@ -37,6 +37,7 @@ jobs:
           repository: "fwHub/${{ env.CRK_REPOSITORY }}"
           ref: ${{ env.MERGE_INTO_BRANCH }}
           path: branch-checkout-dir
+          fetch-depth: 0
           token: ${{ secrets.gh_auth_token_called }}
       - name: "Verify if ${{ env.RC_BRANCH }} tag already exists for ${{ env.CRK_REPOSITORY }} repository"
         run: |
