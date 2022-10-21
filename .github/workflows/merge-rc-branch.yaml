@@ -1,0 +1,56 @@
+name: "Merge RC branch"
+
+on:
+  workflow_call:
+    inputs:
+      rc_branch_called:
+        description: 'RC branch to merge'
+        required: true
+        type: string
+      crk_repository_called:
+        description: 'Application repository'
+        required: true
+        type: string
+      merge_into_called:
+        description: 'Branch to merge into'
+        required: false
+        default: "development"
+        type: string
+    secrets:
+      gh_auth_token_called:
+        required: true
+jobs:
+  merge-rc-branch:
+    env:
+      CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
+      RC_BRANCH: ${{ inputs.rc_branch_called }}
+      MERGE_INTO_BRANCH: ${{ inputs.merge_into_called }}
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ./branch-checkout-dir
+    continue-on-error: false
+    steps:
+      - name: "Checkout ${{ env.CRK_REPOSITORY }} repository from ${{ env.MERGE_INTO_BRANCH }} branch"
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          repository: "fwHub/${{ env.CRK_REPOSITORY }}"
+          ref: ${{ env.MERGE_INTO_BRANCH }}
+          path: branch-checkout-dir
+          token: ${{ secrets.gh_auth_token_called }}
+      - name: "Verify if ${{ env.RC_BRANCH }} tag already exists for ${{ env.CRK_REPOSITORY }} repository"
+        run: |
+          error () { echo "$1"; exit $2; }
+          if git ls-remote --tags | grep "refs/tags/${{ env.RC_BRANCH }}$"; then
+            error "::error title:VersionTagAlredyExists::RC branch '${{ env.RC_BRANCH }}' tag already exists in ${{ env.CRK_REPOSITORY }} repository." 1
+          fi;
+        working-directory: ./branch-checkout-dir
+      - name: "Merge ${{ env.RC_BRANCH }} RC branch into ${{ env.MERGE_INTO_BRANCH }} for ${{ env.CRK_REPOSITORY }}"
+        run: git merge --no-edit ${{ env.RC_BRANCH }} && git push origin ${{ env.MERGE_INTO_BRANCH }}
+        working-directory: ./branch-checkout-dir
+      - name: "Create ${{ env.RC_BRANCH }} tag in ${{ env.CRK_REPOSITORY }}"
+        run: git tag ${{ env.RC_BRANCH }} && git push origin tag ${{ env.RC_BRANCH }}
+        working-directory: ./branch-checkout-dir
+      - name: "Remove ${{ env.RC_BRANCH }} branch from ${{ env.CRK_REPOSITORY }}"
+        run: git push origin --delete "refs/heads/${{ env.RC_BRANCH }}"
+        working-directory: ./branch-checkout-dir
