@@ -47,7 +47,10 @@ jobs:
           fi;
         working-directory: ./branch-checkout-dir
       - name: "Merge ${{ env.RC_BRANCH }} RC branch into ${{ env.MERGE_INTO_BRANCH }} for ${{ env.CRK_REPOSITORY }}"
-        run: git merge --no-edit ${{ env.RC_BRANCH }} && git push origin ${{ env.MERGE_INTO_BRANCH }}
+        run: |
+          git checkout ${{ env.RC_BRANCH }} \
+          && git merge --no-edit ${{ env.RC_BRANCH }} \
+          && git push origin ${{ env.MERGE_INTO_BRANCH }}
         working-directory: ./branch-checkout-dir
       - name: "Create ${{ env.RC_BRANCH }} tag in ${{ env.CRK_REPOSITORY }}"
         run: git tag ${{ env.RC_BRANCH }} && git push origin tag ${{ env.RC_BRANCH }}
