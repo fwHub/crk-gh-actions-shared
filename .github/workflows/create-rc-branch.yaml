@@ -3,25 +3,28 @@ name: "Create RC branch"
 on:
   workflow_call:
     inputs:
-      rc_branch:
+      rc_branch_called:
         description: 'RC version to branch'
         required: true
-      crk_repository:
+        type: string
+      crk_repository_called:
         description: 'Application repository'
         required: true
-      ref_branch:
+        type: string
+      ref_branch_called:
         description: 'Base reference to branch from'
         required: false
         default: "development"
+        type: string
     secrets:
       gh_auth_token_called:
         required: true
 jobs:
   create-rc-branch:
     env:
-      CRK_REPOSITORY: ${{ inputs.crk_repository }}
-      RC_BRANCH: ${{ inputs.rc_branch }}
-      REF_BRANCH: ${{ inputs.ref_branch }}
+      CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
+      RC_BRANCH: ${{ inputs.rc_branch_called }}
+      REF_BRANCH: ${{ inputs.ref_branch_called }}
     runs-on: ubuntu-20.04
     defaults:
       run:
