@@ -1,0 +1,48 @@
+name: "Create RC branch"
+
+on:
+  workflow_call:
+    inputs:
+      rc_branch:
+        description: 'RC version to branch'
+        required: true
+      crk_repository:
+        description: 'Application repository'
+        required: true
+      ref_branch:
+        description: 'Base reference to branch from'
+        required: false
+        default: "development"
+    secrets:
+      gh_auth_token_called:
+        required: true
+jobs:
+  create-rc-branch:
+    env:
+      CRK_REPOSITORY: ${{ inputs.crk_repository }}
+      RC_BRANCH: ${{ inputs.rc_branch }}
+      REF_BRANCH: ${{ inputs.ref_branch }}
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ./branch-checkout-dir
+    continue-on-error: false
+    steps:
+      - name: "Checkout ${{ env.CRK_REPOSITORY }} repository"
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          repository: "fwHub/${{ env.CRK_REPOSITORY }}"
+          ref: ${{ env.REF_BRANCH }}
+          path: branch-checkout-dir
+          token: ${{ secrets.gh_auth_token_called }}
+      - name: "Verify if ${{ env.RC_BRANCH }} RC branch already exists for ${{ env.CRK_REPOSITORY }} repository"
+        run: |
+          error () { echo "$1"; exit $2; }
+          if git ls-remote | awk '{print $2}' | grep "refs/heads/${{ env.RC_BRANCH }}$"; then
+            error "::error title:RCAlredyExists::RC branch '${{ env.RC_BRANCH }}' already exists in ${{ env.CRK_REPOSITORY }} repository." 1
+          fi;
+        working-directory: ./branch-checkout-dir
+      - name: "Create ${{ env.RC_BRANCH }} RC branch for ${{ env.CRK_REPOSITORY }}"
+        run: git checkout -b ${{ env.RC_BRANCH }} && git push origin ${{ env.RC_BRANCH }}
+        id: create-rc-branch
+        working-directory: ./branch-checkout-dir
