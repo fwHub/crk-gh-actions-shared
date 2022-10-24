@@ -1,0 +1,63 @@
+name: "RC branched slack notify"
+
+on:
+  workflow_call:
+    inputs:
+      rc_branch_called:
+        description: 'RC version to branch'
+        required: true
+        type: string
+      crk_repository_called:
+        description: 'Application repository'
+        required: true
+        type: string
+      slack_channel_called:
+        description: 'Slack channel to notify'
+        required: false
+        default: "cirkus-release"
+        type: string
+    secrets:
+      gh_auth_token_called:
+        required: true
+jobs:
+  notify-on-slack:
+    env:
+      CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
+      RC_BRANCH: ${{ github.event.inputs.rc_branch_called }}
+      SLACK_CHANNEL: ${{ github.event.inputs.slack_channel_called }}
+    steps:
+      runs-on: ubuntu-20.04
+      - name: Send slack notification
+        uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
+        with:
+          payload: |
+            {
+              "text": "*${{ env.RC_BRANCH }} branch created*",
+              "icon_emoji": ":cirkus:",
+              "channel": "#${{ env.SLACK_CHANNEL }}",
+              "blocks": [
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*RC branch:*\n${{ env.RC_BRANCH }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Platform:*\n${{ env.CRK_REPOSITORY }}"
+                    }
+                  ]
+                }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
