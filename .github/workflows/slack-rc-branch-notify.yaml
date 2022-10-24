@@ -21,8 +21,8 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
-      RC_BRANCH: ${{ github.event.inputs.rc_branch_called }}
-      SLACK_CHANNEL: ${{ github.event.inputs.slack_channel_called }}
+      RC_BRANCH: ${{ inputs.rc_branch_called }}
+      SLACK_CHANNEL: ${{ inputs.slack_channel_called }}
     steps:
       - name: Send slack notification
         uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
