@@ -11,13 +11,15 @@ on:
         description: 'Application repository'
         required: true
         type: string
+    secrets:
+      slack_webhook_url_called:
+        required: true
 jobs:
   notify-on-slack:
     runs-on: ubuntu-20.04
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
       RC_BRANCH: ${{ inputs.rc_branch_called }}
-      SLACK_CHANNEL: ${{ inputs.slack_channel_called }}
     steps:
       - name: Send slack notification
         uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
@@ -49,5 +51,5 @@ jobs:
               ]
             }
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_CRK_RELEASE_CHANNEL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.slack_webhook_url_called }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
