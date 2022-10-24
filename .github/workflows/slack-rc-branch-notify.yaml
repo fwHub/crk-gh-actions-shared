@@ -16,17 +16,14 @@ on:
         required: false
         default: "cirkus-release"
         type: string
-    secrets:
-      gh_auth_token_called:
-        required: true
 jobs:
   notify-on-slack:
+    runs-on: ubuntu-20.04
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
       RC_BRANCH: ${{ github.event.inputs.rc_branch_called }}
       SLACK_CHANNEL: ${{ github.event.inputs.slack_channel_called }}
     steps:
-      runs-on: ubuntu-20.04
       - name: Send slack notification
         uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
         with:
