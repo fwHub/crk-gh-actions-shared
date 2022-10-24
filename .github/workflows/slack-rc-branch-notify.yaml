@@ -11,6 +11,11 @@ on:
         description: 'Application repository'
         required: true
         type: string
+      slack_channel_called:
+        description: 'Slack channel to notify'
+        required: false
+        default: "cirkus-release"
+        type: string
     secrets:
       slack_webhook_url_called:
         required: true
@@ -24,11 +29,11 @@ jobs:
       - name: Send slack notification
         uses: slackapi/slack-github-action@007b2c3c751a190b6f0f040e47ed024deaa72844
         with:
-          channel-id: "G1B2G7DC1"
           payload: |
             {
               "text": "*${{ env.RC_BRANCH }} branch created*",
               "icon_emoji": ":cirkus:",
+              "channel": "#${{ env.SLACK_CHANNEL }}",
               "blocks": [
                 {
                   "type": "section",
