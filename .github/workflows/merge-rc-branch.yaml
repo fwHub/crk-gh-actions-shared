@@ -46,12 +46,14 @@ jobs:
             error "::error title:VersionTagAlredyExists::RC branch '${{ env.RC_BRANCH }}' tag already exists in ${{ env.CRK_REPOSITORY }} repository." 1
           fi;
         working-directory: ./branch-checkout-dir
+      - name: Setup git committer identity
+        run: |
+          git config user.name "fwautobuild" \
+          && git config user.email "buildautomation@cirkus.com"
       - name: "Merge ${{ env.RC_BRANCH }} RC branch into ${{ env.MERGE_INTO_BRANCH }} for ${{ env.CRK_REPOSITORY }}"
         run: |
           git checkout ${{ env.MERGE_INTO_BRANCH }} \
           && git merge --no-edit ${{ env.RC_BRANCH }} \
-          && git config --global user.name "fwautobuild" \
-          && git config --global user.email "buildautomation@cirkus.com" \
           && git push origin ${{ env.MERGE_INTO_BRANCH }}
         working-directory: ./branch-checkout-dir
       - name: "Create ${{ env.RC_BRANCH }} tag in ${{ env.CRK_REPOSITORY }}"
