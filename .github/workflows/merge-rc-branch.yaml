@@ -50,6 +50,8 @@ jobs:
         run: |
           git checkout ${{ env.MERGE_INTO_BRANCH }} \
           && git merge --no-edit ${{ env.RC_BRANCH }} \
+          && git config --global user.name "fwautobuild" \
+          && git config --global user.email "buildautomation@cirkus.com" \
           && git push origin ${{ env.MERGE_INTO_BRANCH }}
         working-directory: ./branch-checkout-dir
       - name: "Create ${{ env.RC_BRANCH }} tag in ${{ env.CRK_REPOSITORY }}"
