@@ -31,11 +31,11 @@ jobs:
         working-directory: ./branch-checkout-dir
     continue-on-error: false
     steps:
-      - name: "Checkout ${{ env.CRK_REPOSITORY }} repository from ${{ env.MERGE_INTO_BRANCH }} branch"
+      - name: "Checkout ${{ env.CRK_REPOSITORY }} repository from ${{ env.RC_BRANCH }} branch"
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
         with:
           repository: "fwHub/${{ env.CRK_REPOSITORY }}"
-          ref: ${{ env.MERGE_INTO_BRANCH }}
+          ref: ${{ env.RC_BRANCH }}
           path: branch-checkout-dir
           fetch-depth: 0
           token: ${{ secrets.gh_auth_token_called }}
@@ -48,7 +48,7 @@ jobs:
         working-directory: ./branch-checkout-dir
       - name: "Merge ${{ env.RC_BRANCH }} RC branch into ${{ env.MERGE_INTO_BRANCH }} for ${{ env.CRK_REPOSITORY }}"
         run: |
-          git checkout ${{ env.RC_BRANCH }} \
+          git checkout ${{ env.MERGE_INTO_BRANCH }} \
           && git merge --no-edit ${{ env.RC_BRANCH }} \
           && git push origin ${{ env.MERGE_INTO_BRANCH }}
         working-directory: ./branch-checkout-dir
