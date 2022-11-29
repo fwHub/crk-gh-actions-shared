@@ -1,0 +1,108 @@
+name: "Build docker image [server]"
+
+on:
+  workflow_call:
+    inputs:
+      project_name_called:
+        description: 'Server application name'
+        required: true
+        type: string
+      version_to_build_called:
+        description: 'Branch or tag to build from'
+        required: true
+        type: string
+      git_sha_tag_called:
+        description: 'Git commit SHA to use as image tag'
+        required: true
+        type: string
+      build_image_called:
+        description: 'FROM image for building'
+        required: true
+        type: string
+      run_image_called:
+        description: 'FROM image for running'
+        required: true
+        type: string
+      maven_version_called:
+        description: 'maven version'
+        required: true
+        type: string
+      ecr_docker_registry_called:
+        description: 'AWS ECR docker registry'
+        required: true
+        type: string
+      aws_ecr_region_called:
+        description: 'AWS ECR docker registry'
+        required: false
+        type: string
+        default: "eu-west-1"
+    secrets:
+      gh_auth_token_called:
+        required: true
+      aws_ecr_access_key_called:
+        required: true
+      aws_ecr_access_secret_called:
+        required: true
+jobs:
+  build-docker-image-reusable:
+    env:
+      CRK_PROJECT_NAME: ${{ inputs.project_name_called }}
+      CRK_APP_VERSION: ${{ inputs.version_to_build_called }}
+      GIT_SHA_TAG: ${{ inputs.git_sha_tag_called }}
+      BUILD_FROM_IMAGE: ${{ inputs.build_image_called }}
+      RUN_FROM_IMAGE: ${{ inputs.run_image_called }}
+      MAVEN_VERSION: ${{ inputs.maven_version_called }}
+      AWS_ECR_REGISTRY: "${{ inputs.ecr_docker_registry_called }}"
+      AWS_ECR_REGION: "${{ inputs.aws_ecr_region_called }}"
+      CW_SERVER_REPOSITORTY: "cw-server"
+    runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: ./branch-checkout-dir
+    continue-on-error: false
+    steps:
+      - name: "Checkout ${{ env.CW_SERVER_REPOSITORTY }} repository from ${{ env.CRK_APP_VERSION }}"
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          repository: "fwHub/${{ env.CW_SERVER_REPOSITORTY }}"
+          ref: ${{ env.CRK_APP_VERSION }}
+          path: branch-checkout-dir
+          token: ${{ secrets.gh_auth_token_called }}
+
+      - name: "Configure AWS credentials"
+        uses: aws-actions/configure-aws-credentials@2aed65ee75445524c50e08d1c0070bc9bd72c9d1
+        with:
+          aws-access-key-id: "${{ secrets.aws_ecr_access_key_called }}"
+          aws-secret-access-key: "${{ secrets.aws_ecr_access_secret_called }}"
+          aws-region: "${{ env.AWS_ECR_REGION }}"
+
+      - name: "Login to Amazon ECR docker image registry"
+        uses: aws-actions/amazon-ecr-login@f0aa41acbc9ad88b14bff7acd2c9a615529148a2
+        id: ecr-login
+
+      - name: "Create Amazon ECR repository"
+        run: >-
+          if aws ecr describe-repositories --repository-names ${{ env.ECR_REPO_NAME }}; then
+            echo "AWS ECR repository already exists"
+          else
+            echo "Creating ${{ env.ECR_REPO_NAME }} AWS ECR repository"
+            aws ecr create-repository --repository-name ${{ env.ECR_REPO_NAME }}
+          fi
+        env:
+          ECR_REPO_NAME: "${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_PROJECT_NAME }}"
+
+      - name: "Build cw-server docker image for ${{ env.CRK_PROJECT_NAME }}"
+        uses: docker/build-push-action@175d02bffea74695e96b351069ac938b338802f9
+        with:
+          context: ${{ github.workspace }}/branch-checkout-dir/${{ env.CRK_PROJECT_NAME }}/docker-build
+          build-contexts: |
+            "java-build=docker-image://${{ env.BUILD_FROM_IMAGE }}"
+            "app-runtime=docker-image://tomcat:${{ env.RUN_FROM_IMAGE }}"
+            "code-supplier=${{ github.workspace }}/branch-checkout-dir"
+          build-args: |
+            "MAVEN_VERSION=${{ env.MAVEN_VERSION }}"
+            "CRK_APP_BRANCH=${{ env.CRK_APP_VERSION }}"
+          tags: |
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE }}_v${{ env.CRK_APP_VERSION }}
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}
+          push: true
