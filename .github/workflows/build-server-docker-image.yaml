@@ -74,7 +74,7 @@ jobs:
         with:
           aws-access-key-id: "${{ secrets.aws_ecr_access_key_called }}"
           aws-secret-access-key: "${{ secrets.aws_ecr_access_secret_called }}"
-          aws-region: "${{ env.AWS_ECR_REGION }}"
+          aws-region: ${{ env.AWS_ECR_REGION }}
 
       - name: "Login to Amazon ECR docker image registry"
         uses: aws-actions/amazon-ecr-login@f0aa41acbc9ad88b14bff7acd2c9a615529148a2
@@ -89,7 +89,7 @@ jobs:
             aws ecr create-repository --repository-name ${{ env.ECR_REPO_NAME }}
           fi
         env:
-          ECR_REPO_NAME: "${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_PROJECT_NAME }}"
+          ECR_REPO_NAME: "${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}"
 
       - name: "Build cw-server docker image for ${{ env.CRK_PROJECT_NAME }}"
         uses: docker/build-push-action@175d02bffea74695e96b351069ac938b338802f9
@@ -97,7 +97,7 @@ jobs:
           context: ${{ github.workspace }}/branch-checkout-dir/${{ env.CRK_PROJECT_NAME }}/docker-build
           build-contexts: |
             "java-build=docker-image://${{ env.BUILD_FROM_IMAGE }}"
-            "app-runtime=docker-image://tomcat:${{ env.RUN_FROM_IMAGE }}"
+            "app-runtime=docker-image://${{ env.RUN_FROM_IMAGE }}"
             "code-supplier=${{ github.workspace }}/branch-checkout-dir"
           build-args: |
             "MAVEN_VERSION=${{ env.MAVEN_VERSION }}"
