@@ -108,6 +108,24 @@ jobs:
             "MAVEN_VERSION=${{ env.MAVEN_VERSION }}"
             "CRK_APP_BRANCH=${{ env.CRK_APP_VERSION }}"
           tags: |
-            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}
-            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}
-          push: true
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-${{ matrix.platform }}
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-${{ matrix.platform }}
+          push: false
+
+      - name: "Create docker manifests to support multi architecture images"
+        run: >-
+          docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }} \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-linux/amd64" \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-linux/arm64" &&
+          docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }} \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-linux/amd64" \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-linux/arm64"
+        env:
+          ECR_REPO_NAME: "${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}"
+
+      - name: "Push cw-server docker image for ${{ env.CRK_PROJECT_NAME }}"
+        run: >-
+          docker push ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }} &&
+          docker push ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}
+        env:
+          ECR_REPO_NAME: "${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}"
