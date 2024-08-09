@@ -141,7 +141,7 @@ jobs:
           docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }} \
             "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-amd64" \
             "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-arm64" &&
-          docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}
+          docker manifest push ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}
         env:
           ECR_REPO_NAME: "${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}"
 
