@@ -97,6 +97,7 @@ jobs:
         id: ecr-login
 
       - name: "Create Amazon ECR repository"
+        if: ${{ matrix.manifest == false }}
         run: >-
           if aws ecr describe-repositories --repository-names ${{ env.ECR_REPO_NAME }}; then
             echo "AWS ECR repository already exists"
