@@ -49,6 +49,17 @@ on:
         required: true
 jobs:
   build-docker-image-reusable:
+  strategy:
+    fail-fast: false
+    matrix:
+      arch:
+        - arm64
+        - amd64
+      include:
+        - arch: arm64
+          runner: ubuntu-24-04-arm
+        - arch: amd64
+          runner: ubuntu-24.04
     env:
       CRK_PROJECT_NAME: ${{ inputs.project_name_called }}
       CRK_APP_VERSION: ${{ inputs.version_to_build_called }}
@@ -60,10 +71,10 @@ jobs:
       AWS_ECR_REGISTRY: "${{ inputs.ecr_docker_registry_called }}"
       AWS_ECR_REGION: "${{ inputs.aws_ecr_region_called }}"
       CW_SERVER_REPOSITORTY: "cw-server"
-      IMAGE_ARCH: "arm64"
+      IMAGE_ARCH: "${{ matrix.arch }}"
       CREATE_ECR_REPO: true
-      CREATE_DOCKER_MANIFEST: false
-    runs-on: ubuntu-24-04-arm
+      CREATE_DOCKER_MANIFEST: true
+    runs-on: ${{ matrix.runner }}
     defaults:
       run:
         working-directory: ./branch-checkout-dir
@@ -89,7 +100,6 @@ jobs:
         id: ecr-login
 
       - name: "Create Amazon ECR repository"
-        if: ${{ env.CREATE_ECR_REPO == true }}
         run: >-
           if aws ecr describe-repositories --repository-names ${{ env.ECR_REPO_NAME }}; then
             echo "AWS ECR repository already exists"
