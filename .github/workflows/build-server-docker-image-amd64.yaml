@@ -1,4 +1,4 @@
-name: "Build docker image [server arm64]"
+name: "Build docker image [server amd64]"
 
 on:
   workflow_call:
@@ -60,10 +60,10 @@ jobs:
       AWS_ECR_REGISTRY: "${{ inputs.ecr_docker_registry_called }}"
       AWS_ECR_REGION: "${{ inputs.aws_ecr_region_called }}"
       CW_SERVER_REPOSITORTY: "cw-server"
-      IMAGE_ARCH: "arm64"
-      CREATE_ECR_REPO: true
-      CREATE_DOCKER_MANIFEST: false
-    runs-on: ubuntu-24-04-arm
+      IMAGE_ARCH: "amd64"
+      CREATE_ECR_REPO: false
+      CREATE_DOCKER_MANIFEST: true
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ./branch-checkout-dir
