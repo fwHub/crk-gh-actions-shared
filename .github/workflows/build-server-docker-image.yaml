@@ -133,6 +133,7 @@ jobs:
           push: true
 
       - name: "Create docker manifests to support multi architecture images"
+        continue-on-error: true
         run: >-
           docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }} \
             "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-amd64" \
