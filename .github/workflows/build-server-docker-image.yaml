@@ -1,4 +1,4 @@
-name: "Build docker image [server arm64]"
+name: "Build docker image"
 
 on:
   workflow_call:
@@ -49,17 +49,17 @@ on:
         required: true
 jobs:
   build-docker-image-reusable:
-  strategy:
-    fail-fast: false
-    matrix:
-      arch:
-        - arm64
-        - amd64
-      include:
-        - arch: arm64
-          runner: ubuntu-24-04-arm
-        - arch: amd64
-          runner: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - arm64
+          - amd64
+        include:
+          - arch: arm64
+            runner: ubuntu-24-04-arm
+          - arch: amd64
+            runner: ubuntu-24.04
     env:
       CRK_PROJECT_NAME: ${{ inputs.project_name_called }}
       CRK_APP_VERSION: ${{ inputs.version_to_build_called }}
