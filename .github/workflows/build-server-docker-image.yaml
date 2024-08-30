@@ -72,8 +72,6 @@ jobs:
       AWS_ECR_REGION: "${{ inputs.aws_ecr_region_called }}"
       CW_SERVER_REPOSITORTY: "cw-server"
       IMAGE_ARCH: "${{ matrix.arch }}"
-      CREATE_ECR_REPO: true
-      CREATE_DOCKER_MANIFEST: true
     runs-on: ${{ matrix.runner }}
     defaults:
       run:
@@ -135,7 +133,6 @@ jobs:
           push: true
 
       - name: "Create docker manifests to support multi architecture images"
-        if: ${{ env.CREATE_DOCKER_MANIFEST == true }}
         run: >-
           docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }} \
             "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-amd64" \
