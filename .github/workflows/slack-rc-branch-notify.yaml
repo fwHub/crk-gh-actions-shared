@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-24.04
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
-      RC_BRANCH: "RB-${{ inputs.rc_branch_called }}"
+      RC_BRANCH: "rb-${{ inputs.rc_branch_called }}"
       SLACK_CHANNEL: ${{ inputs.slack_channel_called }}
     steps:
       - name: Send slack notification

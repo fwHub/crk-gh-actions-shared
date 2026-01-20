@@ -23,7 +23,7 @@ jobs:
   create-rc-branch:
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
-      RC_BRANCH: "RB-${{ inputs.rc_branch_called }}"
+      RC_BRANCH: "rb-${{ inputs.rc_branch_called }}"
       REF_BRANCH: ${{ inputs.ref_branch_called }}
     runs-on: ubuntu-24.04
     defaults:
