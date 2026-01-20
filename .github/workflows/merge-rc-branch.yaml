@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       rc_branch_called:
-        description: 'RC branch to merge'
+        description: 'RC version to merge (without the "RB" prefix)'
         required: true
         type: string
       crk_repository_called:
@@ -23,7 +23,7 @@ jobs:
   merge-rc-branch:
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
-      RC_BRANCH: ${{ inputs.rc_branch_called }}
+      RC_BRANCH: "RB-${{ inputs.rc_branch_called }}"
       MERGE_INTO_BRANCH: ${{ inputs.merge_into_called }}
     runs-on: ubuntu-20.04
     defaults:

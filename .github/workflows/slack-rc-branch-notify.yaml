@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       rc_branch_called:
-        description: 'RC version to branch'
+        description: 'RC version to branch (without the "RB" prefix)'
         required: true
         type: string
       crk_repository_called:
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
-      RC_BRANCH: ${{ inputs.rc_branch_called }}
+      RC_BRANCH: "RB-${{ inputs.rc_branch_called }}"
       SLACK_CHANNEL: ${{ inputs.slack_channel_called }}
     steps:
       - name: Send slack notification
