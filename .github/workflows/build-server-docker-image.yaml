@@ -60,7 +60,7 @@ jobs:
       AWS_ECR_REGISTRY: "${{ inputs.ecr_docker_registry_called }}"
       AWS_ECR_REGION: "${{ inputs.aws_ecr_region_called }}"
       CW_SERVER_REPOSITORTY: "cw-server"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: ./branch-checkout-dir

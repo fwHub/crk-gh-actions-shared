@@ -21,7 +21,7 @@ on:
         required: true
 jobs:
   notify-on-slack:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-24.04
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
       RC_BRANCH: "RB-${{ inputs.rc_branch_called }}"
