@@ -1,0 +1,57 @@
+name: "Create release tag"
+
+on:
+  workflow_call:
+    inputs:
+      rb_branch_called:
+        description: 'Release branch to create a tag on (rb-XX)'
+        required: true
+        type: string
+      crk_repository_called:
+        description: 'Application repository'
+        required: true
+        type: string
+      version_tag_called:
+        description: 'Release version number (2.0, 2.1.1, etc.)'
+        required: true
+        type: string
+    secrets:
+      gh_auth_token_called:
+        required: true
+jobs:
+  tag-rb-branch:
+    env:
+      CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
+      RB_BRANCH: "${{ inputs.RB_BRANCH_called }}"
+      VERSION_TAG: "${{ inputs.version_tag_called }}"
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./branch-checkout-dir
+    continue-on-error: false
+    steps:
+      - name: "Checkout ${{ env.CRK_REPOSITORY }} repository from ${{ env.RB_BRANCH }} branch"
+        uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
+        with:
+          repository: "fwHub/${{ env.CRK_REPOSITORY }}"
+          ref: ${{ env.RB_BRANCH }}
+          path: branch-checkout-dir
+          fetch-depth: 0
+          token: ${{ secrets.gh_auth_token_called }}
+      - name: "Verify if ${{ env.VERSION_TAG }} tag already exists for ${{ env.CRK_REPOSITORY }} repository"
+        run: |
+          error () { echo "$1"; exit $2; }
+          if git ls-remote --tags | grep "refs/tags/${{ env.VERSION_TAG }}$"; then
+            error "::error title:VersionTagAlredyExists::Version '${{ env.VERSION_TAG }}' tag already exists in ${{ env.CRK_REPOSITORY }} repository." 1
+          fi;
+        working-directory: ./branch-checkout-dir
+      - name: Setup git committer identity
+        run: |
+          git config user.name "fwautobuild" \
+          && git config user.email "buildautomation@cirkus.com"
+      - name: "Create ${{ env.VERSION_TAG }} version tag on ${{ env.RB_BRANCH }} branch for ${{ env.CRK_REPOSITORY }}"
+        run: |
+          git checkout ${{ env.RB_BRANCH }} \
+          && git tag ${{ env.RB_BRANCH }} \
+          && git push origin tag ${{ env.RB_BRANCH }}
+        working-directory: ./branch-checkout-dir
