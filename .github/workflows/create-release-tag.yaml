@@ -22,7 +22,7 @@ jobs:
   tag-rb-branch:
     env:
       CRK_REPOSITORY: ${{ inputs.crk_repository_called }}
-      RB_BRANCH: "${{ inputs.RB_BRANCH_called }}"
+      RB_BRANCH: "${{ inputs.rb_branch_called }}"
       VERSION_TAG: "${{ inputs.version_tag_called }}"
     runs-on: ubuntu-24.04
     defaults:
@@ -52,6 +52,6 @@ jobs:
       - name: "Create ${{ env.VERSION_TAG }} version tag on ${{ env.RB_BRANCH }} branch for ${{ env.CRK_REPOSITORY }}"
         run: |
           git checkout ${{ env.RB_BRANCH }} \
-          && git tag ${{ env.RB_BRANCH }} \
-          && git push origin tag ${{ env.RB_BRANCH }}
+          && git tag ${{ env.VERSION_TAG }} \
+          && git push origin tag ${{ env.VERSION_TAG }}
         working-directory: ./branch-checkout-dir
