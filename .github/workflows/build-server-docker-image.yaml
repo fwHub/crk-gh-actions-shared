@@ -85,6 +85,7 @@ jobs:
       run:
         working-directory: ./branch-checkout-dir
     continue-on-error: false
+    timeout-minutes: 40
     steps:
       - name: "Checkout ${{ env.CW_SERVER_REPOSITORTY }} repository from ${{ env.CRK_APP_VERSION }}"
         uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8
