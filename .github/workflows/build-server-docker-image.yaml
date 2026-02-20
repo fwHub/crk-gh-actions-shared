@@ -65,6 +65,7 @@ jobs:
       AWS_ECR_REGISTRY: "${{ inputs.ecr_docker_registry_called }}"
       AWS_ECR_REGION: "${{ inputs.aws_ecr_region_called }}"
       CW_SERVER_REPOSITORTY: "cw-server"
+      IMAGE_ARCH: "${{ matrix.arch }}"
     strategy:
       fail-fast: false
       matrix:
@@ -137,6 +138,18 @@ jobs:
             "MAVEN_VERSION=${{ env.MAVEN_VERSION }}"
             "CRK_APP_BRANCH=${{ env.CRK_APP_VERSION }}"
           tags: |
-            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}
-            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-${{ env.IMAGE_ARCH }}
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-${{ env.IMAGE_ARCH }}
           push: true
+
+      - name: "Create docker manifests to support multi architecture images"
+        continue-on-error: true
+        run: >-
+          docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }} \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-amd64" \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-arm64" &&
+          docker manifest push ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }} &&
+          docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }} \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-amd64" \
+            "${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-arm64" &&
+          docker manifest push ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}
