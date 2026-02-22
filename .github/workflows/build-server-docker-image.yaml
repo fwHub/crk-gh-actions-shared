@@ -128,10 +128,11 @@ jobs:
         uses: thaitype/actions-switch-case@49881fc344c8a3c767b7f344b3b7c659937c9c45
         id: set-image-arch-tag
         with:
-          default: ""
+          default: "no-default"
           conditionals-with-values: |
             ${{ inputs.build_amd64_called == 'true' && env.IMAGE_ARCH == 'arm64' }} => arm64
             ${{ inputs.build_amd64_called == 'true' && env.IMAGE_ARCH == 'amd64' }} => amd64
+            ${{ inputs.build_amd64_called != 'true' }} => ''
 
       - name: "Build cw-server docker image for ${{ env.CRK_PROJECT_NAME }}"
         if: ${{ matrix.build == 'true' }}
