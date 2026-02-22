@@ -124,6 +124,15 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      - name: Set arch-specific image tag (only when building multi-arch)
+        uses: thaitype/actions-switch-case@49881fc344c8a3c767b7f344b3b7c659937c9c45
+        id: set-image-arch-tag
+        with:
+          default: ""
+          conditionals-with-values: |
+            ${{ inputs.build_amd64_called == 'true' && env.IMAGE_ARCH == 'arm64' }} => arm64
+            ${{ inputs.build_amd64_called == 'true' && env.IMAGE_ARCH == 'amd64' }} => amd64
+
       - name: "Build cw-server docker image for ${{ env.CRK_PROJECT_NAME }}"
         if: ${{ matrix.build == 'true' }}
         uses: docker/build-push-action@175d02bffea74695e96b351069ac938b338802f9
@@ -138,11 +147,12 @@ jobs:
             "MAVEN_VERSION=${{ env.MAVEN_VERSION }}"
             "CRK_APP_BRANCH=${{ env.CRK_APP_VERSION }}"
           tags: |
-            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-${{ env.IMAGE_ARCH }}
-            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-${{ env.IMAGE_ARCH }}
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }}-${{ steps.set-image-arch-tag.outputs.match }}
+            ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.GIT_SHA_TAG }}-${{ steps.set-image-arch-tag.outputs.match }}
           push: true
 
       - name: "Create docker manifests to support multi architecture images"
+        if: ${{ inputs.build_amd64_called == 'true' }}
         continue-on-error: true
         run: >-
           docker manifest create ${{ env.AWS_ECR_REGISTRY }}/${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}:${{ env.RUN_FROM_IMAGE_TAG }}_v${{ env.CRK_APP_VERSION }} \
