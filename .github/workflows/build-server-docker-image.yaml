@@ -93,17 +93,6 @@ jobs:
         uses: aws-actions/amazon-ecr-login@f0aa41acbc9ad88b14bff7acd2c9a615529148a2
         id: ecr-login
 
-      - name: "Create Amazon ECR repository"
-        run: >-
-          if aws ecr describe-repositories --repository-names ${{ env.ECR_REPO_NAME }}; then
-            echo "AWS ECR repository already exists"
-          else
-            echo "Creating ${{ env.ECR_REPO_NAME }} AWS ECR repository"
-            aws ecr create-repository --repository-name ${{ env.ECR_REPO_NAME }}
-          fi
-        env:
-          ECR_REPO_NAME: "${{ env.CRK_PROJECT_NAME }}/${{ env.CRK_APP_VERSION }}"
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
